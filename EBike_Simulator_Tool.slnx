@@ -1,1 +1,4 @@
-<Solution />
+<Solution>
+  <Project Path="EBike_Simulator.Console/EBike_Simulator.Console.csproj" />
+  <Project Path="EBike_Simulator.Core/EBike_Simulator.Core.csproj" />
+</Solution>
