@@ -60,7 +60,7 @@
 
         #endregion
 
-        #region methods
+        #region public methods
 
         /// <summary>
         /// Получить процентное соотношение тепловых режимов

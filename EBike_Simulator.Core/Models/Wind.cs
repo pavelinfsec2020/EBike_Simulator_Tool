@@ -24,7 +24,7 @@ namespace EBike_Simulator.Core.Models
 
         #endregion
 
-        #region methods
+        #region public methods
 
         /// <summary>
         /// Рассчитать силу аэродинамического сопротивления с учетом ветра

@@ -52,7 +52,7 @@ namespace EBike_Simulator.Core.Models.Simulation
         public bool IsControllerOverheating() => ControllerTemp > 70;
         #endregion
 
-        #region methods
+        #region public methods
         /// <summary>
         /// Получить мгновенную энергоэффективность
         /// </summary>

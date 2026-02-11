@@ -43,7 +43,7 @@ namespace EBike_Simulator.Core.Models
 
         #endregion
 
-        #region methods
+        #region public methods
 
         /// <summary>
         /// Получить диаметр колеса в метрах

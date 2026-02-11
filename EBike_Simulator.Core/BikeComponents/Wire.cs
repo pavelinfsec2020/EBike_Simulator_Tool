@@ -29,7 +29,7 @@
 
         #endregion
 
-        #region public methods
+        #region methods
 
         /// <summary>
         /// Рассчитать падение напряжения на проводе

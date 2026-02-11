@@ -36,7 +36,7 @@ namespace EBike_Simulator.Core.Models.Simulation
 
         #endregion
 
-        #region methods
+        #region public methods
 
         /// <summary>
         /// Получить время достижения целевой скорости

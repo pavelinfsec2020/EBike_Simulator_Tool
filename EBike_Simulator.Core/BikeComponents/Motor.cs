@@ -40,7 +40,7 @@
 
         #endregion
 
-        #region methods
+        #region public methods
 
         /// <summary>
         /// Получить текущий КПД с учетом температуры
