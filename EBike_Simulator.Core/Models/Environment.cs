@@ -4,17 +4,31 @@ using System.Text;
 
 namespace EBike_Simulator.Core.Models
 {
+    /// <summary>
+    /// Погодные условия окружающей среды
+    /// </summary>
     public class Environment
     {
         #region props
 
-        public double Temperature { get; set; } = 20.0; //  (°C)
-        public Wind WindParams { get; set; } = new Wind();
+        /// <summary>
+        /// Температура воздуха в градусах Цельсия
+        /// </summary>
+        public double Temperature { get; set; } = 20.0;
+
+        /// <summary>
+        /// Параметры ветра
+        /// </summary>
+        public Wind Wind { get; set; } = new Wind();
 
         #endregion
 
         #region methods
 
+        /// <summary>
+        /// Получить коэффициент влияния температуры на емкость батареи
+        /// </summary>
+        /// <returns>Множитель емкости (1.0 = 100% при 25°C)</returns>
         public double GetTemperatureImpactOnBattery()
         {
             if (Temperature <= 0)
@@ -27,12 +41,15 @@ namespace EBike_Simulator.Core.Models
                 return 0.85 - ((Temperature - 40) * 0.005);
         }
 
+        /// <summary>
+        /// Создать копию объекта погодных условий
+        /// </summary>
         public Environment Clone()
         {
             return new Environment
             {
                 Temperature = Temperature,
-                WindParams = WindParams.Clone()
+                Wind = Wind.Clone()
             };
         }
 

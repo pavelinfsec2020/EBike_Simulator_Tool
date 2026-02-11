@@ -4,24 +4,65 @@ using System.Text;
 
 namespace EBike_Simulator.Core.Models
 {
+    /// <summary>
+    /// Параметры райдера и требования пользователя
+    /// </summary>
     public class BikeSpecifications
     {
         #region props
       
-        public double RiderWeight { get; set; } // kg
-        public double BikeWeight { get; set; } // kg
-        public double WheelDiameter { get; set; } // inch
-        public double DesiredMaxSpeed { get; set; } // km/h
-        public double DesiredMaxRange { get; set; } // km
+        /// <summary>
+        /// Вес райдера в килограммах
+        /// </summary>
+        public double RiderWeight { get; set; }
+        
+        /// <summary>
+        /// Вес байка в килограммах
+        /// </summary>
+        public double BikeWeight { get; set; }
+        
+        /// <summary>
+        /// Диаметр колес в дюймах
+        /// </summary>
+        public double WheelDiameter { get; set; }
+        
+        /// <summary>
+        /// Желаемая максимальная скорость в км/ч
+        /// </summary>
+        public double DesiredMaxSpeed { get; set; }
+        
+        /// <summary>
+        /// Желаемый максимальный пробег в км
+        /// </summary>
+        public double DesiredMaxRange { get; set; }
+        
+        /// <summary>
+        /// Общий вес системы (велосипед + велосипедист)
+        /// </summary>
         public double TotalWeight => RiderWeight + BikeWeight;
 
         #endregion
 
         #region methods
 
+        /// <summary>
+        /// Получить диаметр колеса в метрах
+        /// </summary>
+        /// <returns>Диаметр в метрах</returns>
         public double GetWheelDiameterMeters() => WheelDiameter * 0.0254;
+
+        /// <summary>
+        /// Получить длину окружности колеса в метрах
+        /// </summary>
+        /// <returns>Длина окружности в метрах</returns>
         public double GetWheelCircumference() => Math.PI * GetWheelDiameterMeters();
 
+        /// <summary>
+        /// Рассчитать требуемую мощность для движения с заданной скоростью
+        /// </summary>
+        /// <param name="speedKmh">Скорость в км/ч</param>
+        /// <param name="gradePercent">Уклон в процентах (по умолчанию 0)</param>
+        /// <returns>Требуемая мощность в ваттах</returns>
         public double CalculateRequiredPower(double speedKmh, double gradePercent = 0)
         {
             double speedMs = speedKmh / 3.6;
@@ -36,10 +77,12 @@ namespace EBike_Simulator.Core.Models
             }
 
             double totalForce = rollingResistance + airResistance + gradeResistance;
-           
             return (totalForce * speedMs) / 0.8;
-        }
+        }    
 
+        /// <summary>
+        /// Создать копию объекта спецификаций
+        /// </summary>
         public BikeSpecifications Clone()
         {
             return new BikeSpecifications
@@ -52,6 +95,9 @@ namespace EBike_Simulator.Core.Models
             };
         }
 
+        /// <summary>
+        /// Получить текстовое описание конфигурации
+        /// </summary>
         public string GetDescription()
         {
             return $"Вес: {TotalWeight}кг (велосипед: {BikeWeight}кг + райдер: {RiderWeight}кг), " +
