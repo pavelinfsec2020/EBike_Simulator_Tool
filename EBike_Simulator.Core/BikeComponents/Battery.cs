@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EBike_Simulator.Core.BikeComponents
+﻿namespace EBike_Simulator.Core.BikeComponents
 {
     /// <summary>
     /// Модель литий-ионного аккумулятора с учетом температуры и нагрузки
