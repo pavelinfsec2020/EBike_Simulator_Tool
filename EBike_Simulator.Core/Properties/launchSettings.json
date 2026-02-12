@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "EBike_Simulator.Core": {
+      "commandName": "Project"
+    },
+    "Профиль 1": {
+      "commandName": "Project"
+    }
+  }
+}

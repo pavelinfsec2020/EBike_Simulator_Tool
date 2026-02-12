@@ -7,4 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\EBike_Simulator.Core\EBike_Simulator.Core.csproj" />
+  </ItemGroup>
+
 </Project>

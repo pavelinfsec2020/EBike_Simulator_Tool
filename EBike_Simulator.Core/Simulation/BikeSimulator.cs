@@ -2,6 +2,7 @@
 using EBike_Simulator.Core.Enums;
 using EBike_Simulator.Core.Models;
 using EBike_Simulator.Core.Models.Simulation;
+using EBike_Simulator.Core.Services.WireService;
 using EBike_Simulator.Core.Simulation.SimulationResults;
 using EBike_Simulator.Core.Simulation.SimulationResults.Temperature;
 using EBike_Simulator.Core.Simulation.SimulationResults.Wind;
