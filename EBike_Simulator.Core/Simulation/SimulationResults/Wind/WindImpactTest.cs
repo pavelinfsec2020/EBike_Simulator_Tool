@@ -42,9 +42,6 @@ namespace EBike_Simulator.Core.Simulation.SimulationResults.Wind
         /// </summary>
         public WindImpactResult GetWorstResult() => Results.OrderBy(r => r.Efficiency).FirstOrDefault();
 
-        /// <summary>
-        /// Вывести отчет в консоль
-        /// </summary>
         public string PrintReport()
         {
             var result = new StringBuilder();
@@ -58,13 +55,26 @@ namespace EBike_Simulator.Core.Simulation.SimulationResults.Wind
 
                 foreach (var item in group.OrderBy(r => r.WindSpeed))
                 {
-                    result.AppendLine($"  {item.WindSpeed,3} м/с: {item.Range,5:F1} км");
+                    double range = Math.Min(item.Range, 150);
+                    result.AppendLine($"  {item.WindSpeed,3} м/с: {range,5:F1} км");
                 }
+            }
+
+            var best = GetBestResult();
+            var worst = GetWorstResult();
+
+            if (best != null && worst != null)
+            {
+                double gain = Math.Min(((best.Range / worst.Range - 1) * 100), 200);
+
+                result.AppendLine($"\n📊 ВЫВОДЫ:");
+                result.AppendLine($"  • Лучшие условия: {best.WindSpeed} м/с ({GetDirectionName(best.Direction)})");
+                result.AppendLine($"  • Худшие условия: {worst.WindSpeed} м/с ({GetDirectionName(worst.Direction)})");
+                result.AppendLine($"  • Выигрыш от попутного ветра: +{gain:F1}%");
             }
 
             return result.ToString();
         }
-
         #endregion
 
         #region private methods

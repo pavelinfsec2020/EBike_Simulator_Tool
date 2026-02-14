@@ -79,7 +79,7 @@ namespace EBike_Simulator.Core.Simulation
                 double availableForce = actualPower / speedMs;
                 return (availableForce - totalForce) / _specs.TotalWeight;
             }
-            return 2.0; // Стартовое ускорение при трогании с места
+            return 2.0;
         }
 
         /// <summary>
@@ -96,12 +96,25 @@ namespace EBike_Simulator.Core.Simulation
         /// </summary>
         private double CalculateWindEffect(double speedMs, Wind wind)
         {
-            if (speedMs < 0.1) return 0;
+            if (speedMs < 0.1) 
+                return 0;
 
             double noWindResistance = 0.5 * AirDensity * DragCoefficient * FrontalArea * speedMs * speedMs;
             double withWindResistance = wind.GetEffectiveWindForce(speedMs * 3.6);
+            double difference = withWindResistance - noWindResistance;
 
-            return ((withWindResistance - noWindResistance) / noWindResistance) * 100;
+            if (noWindResistance <= 0) 
+                return 0;
+
+            double percent = (difference / noWindResistance) * 100;
+
+            if (percent > 100) 
+                percent = 100;
+
+            if (percent < -50) 
+                percent = -50;
+
+            return percent;
         }
 
         /// <summary>
@@ -125,23 +138,44 @@ namespace EBike_Simulator.Core.Simulation
         /// </summary>
         private double FindThrottleForSpeed(double targetSpeed)
         {
-            double throttle = 0.5;
+            double bestThrottle = 0.5;
+            double bestSpeed = 0;
+            double minDifference = double.MaxValue;
 
-            for (int i = 0; i < 10; i++)
+            // Сначала проверим максимальную скорость
+            var maxTest = Simulate(1.0, 60, 0.1);
+            double maxSpeed = maxTest.MaxSpeed;
+
+            // Если запрошенная скорость выше максимальной, возвращаем 1.0
+            if (targetSpeed > maxSpeed)
             {
-                var test = Simulate(throttle, 30, 0.1);
-                if (test.Data.Count == 0) break;
-
-                double achievedSpeed = test.Data.Last().Speed;
-                double error = targetSpeed - achievedSpeed;
-
-                if (Math.Abs(error) < 1.0) break;
-
-                throttle += error * 0.02;
-                throttle = Math.Clamp(throttle, 0.1, 1.0);
+                return 1.0;
             }
 
-            return throttle;
+            // Перебираем throttle от 0.1 до 1.0
+            for (double t = 0.1; t <= 1.0; t += 0.05)
+            {
+                var test = Simulate(t, 30, 0.1);
+                if (test.Data.Count == 0) continue;
+
+                double speed = test.Data.Last().Speed;
+                double difference = Math.Abs(speed - targetSpeed);
+
+                if (difference < minDifference)
+                {
+                    minDifference = difference;
+                    bestSpeed = speed;
+                    bestThrottle = t;
+                }
+
+                // Если нашли достаточно близко, выходим
+                if (difference < 1.0)
+                {
+                    break;
+                }
+            }
+
+            return bestThrottle;
         }
 
         #endregion
@@ -174,39 +208,74 @@ namespace EBike_Simulator.Core.Simulation
 
             while (time < maxTime && _battery.HasCharge())
             {
-                double speedMs = speed / 3.6; // Перевод в м/с
+                double speedMs = speed / 3.6; //  в м/с
 
                 // 1. Расчет сил сопротивления
                 double rollingForce = CalculateRollingResistance();
                 double windForce = _environment.Wind.GetEffectiveWindForce(speed);
                 double totalForce = rollingForce + windForce;
 
-                // 2. Мощность от мотора с учетом тепловых ограничений
+                // 2. Мощность от мотора
                 double motorPower = _motor.GetOutputPower(throttle);
-                double requiredPower = totalForce * speedMs;
-                double actualPower = Math.Min(motorPower, requiredPower);
 
-                // 3. Расчет ускорения
-                double acceleration = CalculateAcceleration(speedMs, totalForce, actualPower);
+                // 3. Доступная сила от мотора (с защитой от деления на 0)
+                double availableForce;
+                if (speedMs > 0.1)
+                {
+                    availableForce = motorPower / speedMs;
+                }
+                else
+                {
+                    availableForce = motorPower / 0.1; // При очень малой скорости
+                }
 
-                // 4. Обновление скорости и расстояния
-                speedMs = UpdateSpeed(speedMs, acceleration, timeStep);
+                // 4. Результирующая сила
+                double netForce = availableForce - totalForce;
+
+                // 5. Ускорение
+                double acceleration = netForce / _specs.TotalWeight;
+
+                // 6. Ограничиваем ускорение разумными пределами
+                acceleration = Math.Clamp(acceleration, -5.0, 5.0);
+
+                // 7. Если стоим на месте и сил не хватает - не даем отрицательного ускорения
+                if (speedMs < 0.01 && netForce < 0)
+                {
+                    acceleration = 0;
+                }
+
+                // 8. Обновляем скорость
+                speedMs += acceleration * timeStep;
+                if (speedMs < 0) speedMs = 0;
                 speed = speedMs * 3.6;
                 distance += speedMs * timeStep / 1000;
 
-                // 5. Расчет тока и расхода энергии
+                // 9. Рассчитываем реальную мощность на колесах
+                double actualPower;
+                if (speedMs > 0.01)
+                {
+                    actualPower = (availableForce - netForce) * speedMs;
+                    if (actualPower < 0) actualPower = 0;
+                }
+                else
+                {
+                    actualPower = motorPower;
+                }
+
+                // 10. Расчет тока
                 double requiredCurrent = _motor.CalculateRequiredCurrent(actualPower);
                 double maxBatteryCurrent = _battery.GetMaxDischargeCurrent();
                 double actualCurrent = Math.Min(requiredCurrent, maxBatteryCurrent);
                 actualCurrent = _controller.GetOutputCurrent(throttle, _battery.Voltage);
 
+                // 11. Расход энергии
                 _battery.Use(actualCurrent, timeStep / 3600, _environment.Temperature);
 
-                // 6. Обновление температур компонентов
+                // 12. Обновление температур
                 _motor.UpdateTemp(actualPower, _environment.Temperature, timeStep);
                 _controller.UpdateTemp(actualCurrent, _environment.Temperature, timeStep);
 
-                // 7. Расчет влияния внешних факторов
+                // 13. Расчет влияния внешних факторов
                 double windEffect = CalculateWindEffect(speedMs, _environment.Wind);
                 double tempEffect = _battery.GetTemperatureImpactOnRange();
 
@@ -214,7 +283,7 @@ namespace EBike_Simulator.Core.Simulation
                 totalTempEffect += tempEffect;
                 samples++;
 
-                // 8. Сохранение точки данных
+                // 14. Сохранение точки данных
                 result.Data.Add(new SimulationData
                 {
                     Time = time,
@@ -232,12 +301,12 @@ namespace EBike_Simulator.Core.Simulation
 
                 time += timeStep;
 
-                // 9. Проверка условий остановки
+                // 15. Проверка условий остановки
                 if (ShouldStopSimulation(acceleration, speedMs, time))
                     break;
             }
 
-            // 10. Заполнение итоговых результатов
+            // 16. Заполнение итоговых результатов
             result.TotalTime = time;
             result.TotalDistance = distance;
             result.MaxSpeed = result.Data.Count > 0 ? result.Data.Max(d => d.Speed) : 0;
@@ -267,8 +336,108 @@ namespace EBike_Simulator.Core.Simulation
         /// <returns>Результаты симуляции пробега</returns>
         public SimulationResult TestRange(double constantSpeed)
         {
-            double throttle = FindThrottleForSpeed(constantSpeed);
-            return Simulate(throttle, 3600 * 5, 1.0); // Максимум 5 часов
+            var maxTest = Simulate(1.0, 30, 0.1);
+            double maxPossibleSpeed = maxTest.MaxSpeed;
+
+            double targetSpeed = constantSpeed;
+            if (constantSpeed > maxPossibleSpeed)
+            {
+                targetSpeed = maxPossibleSpeed * 0.9;
+            }
+
+            double throttle = FindThrottleForSpeed(targetSpeed);
+
+            // ИСПОЛЬЗУЕМ НОВЫЙ МЕТОД!
+            var result = SimulateRange(throttle, 3600 * 5, 1.0);
+
+            return result;
+        }
+
+        public SimulationResult SimulateRange(double throttle, double maxTime, double timeStep = 1.0)
+        {
+            var result = new SimulationResult();
+
+            _motor.Reset(_environment.Temperature);
+            _controller.Reset();
+            _battery.Reset();
+
+            double speed = 0;
+            double distance = 0;
+            double time = 0;
+
+            while (time < maxTime && _battery.HasCharge())
+            {
+                double speedMs = speed / 3.6;
+
+                double rollingForce = CalculateRollingResistance();
+                double windForce = _environment.Wind.GetEffectiveWindForce(speed);
+                double totalForce = rollingForce + windForce;
+
+                double motorPower = _motor.GetOutputPower(throttle);
+
+                double availableForce;
+                if (speedMs > 0.1)
+                    availableForce = motorPower / speedMs;
+                else
+                    availableForce = motorPower / 0.1;
+
+                double netForce = availableForce - totalForce;
+                double acceleration = netForce / _specs.TotalWeight;
+                acceleration = Math.Clamp(acceleration, -5.0, 5.0);
+
+                if (speedMs < 0.01 && netForce < 0)
+                    acceleration = 0;
+
+                speedMs += acceleration * timeStep;
+                if (speedMs < 0) speedMs = 0;
+                speed = speedMs * 3.6;
+                distance += speedMs * timeStep / 1000;
+
+                double actualPower;
+                if (speedMs > 0.01)
+                {
+                    actualPower = (availableForce - netForce) * speedMs;
+                    if (actualPower < 0) actualPower = 0;
+                }
+                else
+                {
+                    actualPower = motorPower;
+                }
+
+                double requiredCurrent = _motor.CalculateRequiredCurrent(actualPower);
+                double maxBatteryCurrent = _battery.GetMaxDischargeCurrent();
+                double actualCurrent = Math.Min(requiredCurrent, maxBatteryCurrent);
+                actualCurrent = _controller.GetOutputCurrent(throttle, _battery.Voltage);
+
+                _battery.Use(actualCurrent, timeStep / 3600, _environment.Temperature);
+
+                result.Data.Add(new SimulationData
+                {
+                    Time = time,
+                    Speed = speed,
+                    Distance = distance,
+                    MotorTemp = _motor.Temperature,
+                    ControllerTemp = _controller.Temperature,
+                    BatteryTemp = _battery.Temperature,
+                    BatterySOC = _battery.SOC,
+                    Current = actualCurrent,
+                    Power = actualPower,
+                    WindEffect = 0,
+                    TempEffect = 0
+                });
+
+                time += timeStep;
+
+                if (!_battery.HasCharge())
+                    break;
+            }
+
+            result.TotalTime = time;
+            result.TotalDistance = distance;
+            result.MaxSpeed = result.Data.Count > 0 ? result.Data.Max(d => d.Speed) : 0;
+            result.BatteryEmpty = !_battery.HasCharge();
+
+            return result;
         }
 
         /// <summary>
@@ -289,7 +458,7 @@ namespace EBike_Simulator.Core.Simulation
                 return analysis;
 
             double maxBatteryCurrent = result.Data.Max(d => d.Current);
-            double maxMotorCurrent = maxBatteryCurrent * 1.2; // 20% запас
+            double maxMotorCurrent = maxBatteryCurrent * 1.2; 
 
             var wires = _wireSelector.SelectWiring(
                 maxBatteryCurrent,
@@ -327,22 +496,20 @@ namespace EBike_Simulator.Core.Simulation
 
             foreach (double temp in testTemperatures)
             {
-                var env = new Models.Environment
-                {
-                    Temperature = temp,
-                    Wind = _environment.Wind.Clone()
-                };
+                var env = new Models.Environment { Temperature = temp };
+
+                var testBattery = _battery.Clone();
+                testBattery.ForceTemperature(temp); 
 
                 var tempSimulator = new BikeSimulator(
                     _specs.Clone(),
                     _motor.Clone(),
-                    _battery.Clone(),
+                    testBattery,
                     _controller.Clone(),
                     env
                 );
 
                 var result = tempSimulator.TestRange(speed);
-
                 impact.AddTest(temp, result.TotalDistance, result.TotalTime, result.FinalBatteryTemp);
             }
 

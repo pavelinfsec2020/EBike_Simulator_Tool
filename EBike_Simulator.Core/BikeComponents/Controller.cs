@@ -14,9 +14,19 @@
         #region props
 
         /// <summary>
+        /// Название модели контроллера
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
         /// Максимальный выходной ток контроллера (А)
         /// </summary>
         public double MaxCurrent { get; set; }
+
+        /// <summary>
+        /// Вес контроллера в килограммах
+        /// </summary>
+        public double Weight { get; set; }
 
         /// <summary>
         /// Текущая температура контроллера (°C)
@@ -30,9 +40,6 @@
         /// <summary>
         /// Получить выходной ток в зависимости от положения газа
         /// </summary>
-        /// <param name="throttle">Положение газа (0.0-1.0)</param>
-        /// <param name="batteryVoltage">Напряжение батареи (В)</param>
-        /// <returns>Выходной ток (А)</returns>
         public double GetOutputCurrent(double throttle, double batteryVoltage)
         {
             double requestedCurrent = MaxCurrent * throttle;
@@ -40,9 +47,6 @@
             return requestedCurrent * GetThermalFactor();
         }
 
-        /// <summary>
-        /// Получить коэффициент теплового ограничения тока
-        /// </summary>
         private double GetThermalFactor()
         {
             if (_temperature <= 60) return 1.0;
@@ -54,9 +58,6 @@
         /// <summary>
         /// Обновить температуру контроллера
         /// </summary>
-        /// <param name="current">Выходной ток (А)</param>
-        /// <param name="ambientTemperature">Температура окружающей среды (°C)</param>
-        /// <param name="time">Время работы в секундах</param>
         public void UpdateTemp(double current, double ambientTemperature, double time)
         {
             double powerLoss = current * current * 0.1;
@@ -69,7 +70,7 @@
         }
 
         /// <summary>
-        /// Сбросить температуру контроллера до начальной (20°C)
+        /// Сбросить температуру контроллера
         /// </summary>
         public void Reset()
         {
@@ -79,8 +80,6 @@
         /// <summary>
         /// Проверить безопасность заданного тока
         /// </summary>
-        /// <param name="current">Проверяемый ток (А)</param>
-        /// <returns>true если ток не превышает допустимый с учетом тепловых ограничений</returns>
         public bool IsCurrentSafe(double current)
         {
             return current <= MaxCurrent * GetThermalFactor();
@@ -89,8 +88,6 @@
         /// <summary>
         /// Получить текущий КПД контроллера
         /// </summary>
-        /// <param name="current">Выходной ток (А)</param>
-        /// <returns>КПД (0.0-1.0)</returns>
         public double GetEfficiency(double current)
         {
             double baseEfficiency = 0.95;
@@ -101,12 +98,10 @@
         /// <summary>
         /// Рассчитать потери мощности в контроллере
         /// </summary>
-        /// <param name="current">Выходной ток (А)</param>
-        /// <returns>Потери в ваттах</returns>
         public double CalculatePowerLoss(double current)
         {
             double efficiency = GetEfficiency(current);
-            double inputPower = current * 48; // Предполагаем 48В систему
+            double inputPower = current * 48;
             return inputPower * (1 - efficiency);
         }
 
@@ -124,7 +119,6 @@
         /// <summary>
         /// Проверить наличие перегрева
         /// </summary>
-        /// <returns>true если температура выше 70°C</returns>
         public bool IsOverheating() => _temperature > 70;
 
         /// <summary>
@@ -134,8 +128,19 @@
         {
             return new Controller
             {
-                MaxCurrent = MaxCurrent
+                Name = Name,
+                MaxCurrent = MaxCurrent,
+                Weight = Weight
             };
+        }
+
+        #endregion
+
+        #region object override
+
+        public override string ToString()
+        {
+            return $"{MaxCurrent:F0}A Controller"; 
         }
 
         #endregion

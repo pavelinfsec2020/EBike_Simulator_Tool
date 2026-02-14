@@ -3,6 +3,9 @@
     /// <summary>
     /// Модель электромотора для велосипеда с учетом тепловых характеристик
     /// </summary>
+    /// <summary>
+    /// Модель электромотора для велосипеда с учетом тепловых характеристик и веса
+    /// </summary>
     public class Motor
     {
         #region fields
@@ -12,6 +15,11 @@
         #endregion
 
         #region props
+
+        /// <summary>
+        /// Название модели мотора
+        /// </summary>
+        public string Name { get; set; }
 
         /// <summary>
         /// Номинальное напряжение мотора (В)
@@ -34,6 +42,11 @@
         public double Efficiency { get; set; } = 0.85;
 
         /// <summary>
+        /// Вес мотора в килограммах
+        /// </summary>
+        public double Weight { get; set; }
+
+        /// <summary>
         /// Текущая температура мотора (°C)
         /// </summary>
         public double Temperature => _temperature;
@@ -45,7 +58,6 @@
         /// <summary>
         /// Получить текущий КПД с учетом температуры
         /// </summary>
-        /// <returns>КПД (снижается при перегреве и на морозе)</returns>
         public double GetEfficiency()
         {
             double baseEfficiency = Efficiency;
@@ -63,21 +75,18 @@
         /// <summary>
         /// Получить выходную мощность при заданном положении ручки газа
         /// </summary>
-        /// <param name="throttle">Положение газа (0.0-1.0)</param>
-        /// <returns>Мощность на валу (Вт)</returns>
         public double GetOutputPower(double throttle)
         {
-            double requestedPower = Power * throttle;
+            double requestedPower = Power * Math.Clamp(throttle, 0, 1);
             requestedPower = Math.Min(requestedPower, MaxPower);
-            return requestedPower * GetThermalLimitFactor();
+            double thermalFactor = GetThermalLimitFactor();
+
+            return requestedPower * thermalFactor;
         }
 
         /// <summary>
-        /// Обновить температуру мотора на основе потребляемой мощности
+        /// Обновить температуру мотора
         /// </summary>
-        /// <param name="power">Потребляемая мощность (Вт)</param>
-        /// <param name="ambientTemperature">Температура окружающей среды (°C)</param>
-        /// <param name="time">Время работы в секундах</param>
         public void UpdateTemp(double power, double ambientTemperature, double time)
         {
             double efficiency = GetEfficiency();
@@ -91,9 +100,8 @@
         }
 
         /// <summary>
-        /// Сбросить температуру мотора до температуры окружающей среды
+        /// Сбросить температуру мотора
         /// </summary>
-        /// <param name="ambientTemperature">Температура окружающей среды (°C)</param>
         public void Reset(double ambientTemperature)
         {
             _temperature = ambientTemperature;
@@ -102,13 +110,11 @@
         /// <summary>
         /// Проверить наличие перегрева
         /// </summary>
-        /// <returns>true если температура выше 80°C</returns>
         public bool IsOverheating() => _temperature > 80;
 
         /// <summary>
-        /// Получить коэффициент теплового ограничения мощности
+        /// Получить коэффициент теплового ограничения
         /// </summary>
-        /// <returns>Множитель мощности (1.0 - нет ограничений, 0.3 - сильное ограничение)</returns>
         public double GetThermalLimitFactor()
         {
             if (_temperature <= 60) return 1.0;
@@ -120,8 +126,6 @@
         /// <summary>
         /// Рассчитать требуемый ток для заданной мощности
         /// </summary>
-        /// <param name="power">Требуемая мощность (Вт)</param>
-        /// <returns>Ток в амперах</returns>
         public double CalculateRequiredCurrent(double power)
         {
             if (Voltage <= 0) return 0;
@@ -129,17 +133,12 @@
         }
 
         /// <summary>
-        /// Рассчитать крутящий момент на заданных оборотах
+        /// Рассчитать крутящий момент
         /// </summary>
-        /// <param name="rpm">Обороты в минуту</param>
-        /// <returns>Крутящий момент в Н·м</returns>
         public double CalculateTorque(double rpm)
         {
-            if (rpm <= 0)
-                return 0;
-           
+            if (rpm <= 0) return 0;
             double powerWatts = GetOutputPower(1.0);
-           
             return (powerWatts * 60) / (2 * Math.PI * rpm);
         }
 
@@ -148,19 +147,15 @@
         /// </summary>
         public string GetTemperatureStatus()
         {
-            if (_temperature > 100)
-                return "Критический перегрев";
-            else if (_temperature > 80) 
-                return "Перегрев";
-            else if (_temperature > 60) 
-                return "Тепло";
+            if (_temperature > 100) return "Критический перегрев";
+            else if (_temperature > 80) return "Перегрев";
+            else if (_temperature > 60) return "Тепло";
             else return "Норма";
         }
 
         /// <summary>
         /// Проверить возможность выдачи требуемой мощности
         /// </summary>
-        /// <param name="requestedPower">Запрашиваемая мощность (Вт)</param>
         public bool CanDeliverPower(double requestedPower)
         {
             return requestedPower <= MaxPower * GetThermalLimitFactor();
@@ -173,10 +168,12 @@
         {
             return new Motor
             {
+                Name = Name,
                 Voltage = Voltage,
                 Power = Power,
                 MaxPower = MaxPower,
-                Efficiency = Efficiency
+                Efficiency = Efficiency,
+                Weight = Weight
             };
         }
 
