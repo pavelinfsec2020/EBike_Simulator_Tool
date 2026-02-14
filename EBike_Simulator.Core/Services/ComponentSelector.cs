@@ -119,7 +119,8 @@ namespace EBike_Simulator.Core.Services
                 // 72V 
                 new { Name = "QS Motor 205", Voltage = 72.0, Power = 3000.0, MaxPower = 5000.0, Efficiency = 0.89, Weight = 8.5 },
                 new { Name = "MXUS 3000W", Voltage = 72.0, Power = 3000.0, MaxPower = 4500.0, Efficiency = 0.88, Weight = 7.5 },
-                new { Name = "CYC X1 Stealth", Voltage = 72.0, Power = 3000.0, MaxPower = 6000.0, Efficiency = 0.89, Weight = 6.8 }
+                new { Name = "CYC X1 Stealth", Voltage = 72.0, Power = 3000.0, MaxPower = 6000.0, Efficiency = 0.89, Weight = 6.8 },
+                new { Name = "QS Motor 205 8kW", Voltage = 72.0, Power = 5000.0, MaxPower = 8000.0, Efficiency = 0.90, Weight = 12.5 },
             };
 
             var compatibleMotors = availableMotors
@@ -176,7 +177,7 @@ namespace EBike_Simulator.Core.Services
             else if (systemVoltage <= 62)
                 standardCapacities = new[] { 12, 15, 18, 20, 25, 30, 35, 40 };
             else 
-                standardCapacities = new[] { 15, 20, 25, 30, 35, 40, 45, 50 };
+                standardCapacities = new[] { 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100 };
 
             double selectedCapacity = standardCapacities.FirstOrDefault(c => c >= requiredCapacity);
             if (selectedCapacity == 0)
@@ -220,7 +221,7 @@ namespace EBike_Simulator.Core.Services
             else if (motor.Voltage <= 62)
                 standardCurrents = new[] { 30, 35, 40, 45, 50, 60, 70, 80 };
             else
-                standardCurrents = new[] { 40, 50, 60, 70, 80, 90, 100, 120 };
+                standardCurrents = new[] { 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350 };
 
             double selectedCurrent = standardCurrents.FirstOrDefault(c => c >= requiredControllerCurrent);
             

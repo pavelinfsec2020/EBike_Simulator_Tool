@@ -34,6 +34,7 @@ namespace ElectricBikeSimulation.ConsoleTest
 
         static void Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.WriteLine("╔══════════════════════════════════════════════════════════╗");
             Console.WriteLine("║         СИМУЛЯТОР ЭЛЕКТРОВЕЛОСИПЕДА v2.0                 ║");
             Console.WriteLine("╚══════════════════════════════════════════════════════════╝");
