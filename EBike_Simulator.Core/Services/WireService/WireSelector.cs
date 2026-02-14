@@ -40,11 +40,8 @@ namespace EBike_Simulator.Core.Services.WireService
         /// <param name="maxVoltageDropPercent">Максимальное падение напряжения в процентах (по умолч. 3%)</param>
         /// <returns>Рекомендованный провод</returns>
         /// <exception cref="ArgumentException">Выбрасывается при некорректных параметрах</exception>
-        public Wire SelectWire(
-            double maxCurrent,
-            double wireLength,
-            double systemVoltage,
-            double maxVoltageDropPercent = 3.0)
+        public Wire SelectWire(double maxCurrent, double wireLength,
+                      double systemVoltage, double maxVoltageDropPercent = 3.0)
         {
             if (maxCurrent <= 0)
                 throw new ArgumentException("Ток должен быть больше 0", nameof(maxCurrent));
@@ -56,8 +53,7 @@ namespace EBike_Simulator.Core.Services.WireService
             double maxVoltageDrop = systemVoltage * (maxVoltageDropPercent / 100.0);
             Wire selectedWire = null;
 
-            // Перебираем провода от самых толстых к тонким
-            foreach (var wire in _wireTable.OrderBy(w => w.AWG))
+            foreach (var wire in _wireTable.OrderBy(w => w.AWG).Reverse())
             {
                 if (!wire.IsSuitableForCurrent(maxCurrent))
                     continue;
@@ -66,11 +62,10 @@ namespace EBike_Simulator.Core.Services.WireService
                 if (voltageDrop <= maxVoltageDrop)
                 {
                     selectedWire = wire;
-                    break;
+                    break; 
                 }
             }
 
-            // Если не нашли - возвращаем самый толстый
             return selectedWire ?? _wireTable.OrderBy(w => w.AWG).First();
         }
 
@@ -187,7 +182,7 @@ namespace EBike_Simulator.Core.Services.WireService
         public List<Wire> GetAlternativeWires(double current, double length, double voltage)
         {
             var alternatives = new List<Wire>();
-            double maxVoltageDrop = voltage * 0.03; // 3%
+            double maxVoltageDrop = voltage * 0.03; 
 
             foreach (var wire in _wireTable)
             {

@@ -156,17 +156,29 @@ namespace EBike_Simulator.Core.Models.Simulation
         public List<(double distance, double soc)> GetBatteryDischargeChartData(int maxPoints = 50)
         {
             var result = new List<(double, double)>();
-            if (Data.Count == 0) return result;
+            if (Data == null || Data.Count == 0) return result;
 
-            int step = Math.Max(1, Data.Count / Math.Min(maxPoints, Data.Count));
+            int step = Math.Max(1, Data.Count / maxPoints);
+            step = Math.Max(1, step);
+
             for (int i = 0; i < Data.Count; i += step)
+            {
                 result.Add((Data[i].Distance, Data[i].BatterySOC));
+            }
 
-            if (Data.Count > 0 && !result.Any(p => Math.Abs(p.Item1 - Data.Last().Distance) < 0.001))
-                result.Add((Data.Last().Distance, Data.Last().BatterySOC));
+            // Добавляем последнюю точку
+            if (Data.Count > 0)
+            {
+                var last = Data.Last();
+                if (!result.Any(p => Math.Abs(p.Item1 - last.Distance) < 0.001))
+                {
+                    result.Add((last.Distance, last.BatterySOC));
+                }
+            }
 
             return result;
-        }
+        
+        } 
 
         /// <summary>
         /// Найти точку с заданным уровнем заряда
