@@ -18,9 +18,9 @@ namespace EBike_Simulator.Core.Simulation
         #region Private Fields
 
         private readonly BikeSpecifications _specs;
-        private readonly Motor _motor;
-        private readonly Battery _battery;
-        private readonly Controller _controller;
+        private Motor _motor;
+        private Battery _battery;
+        private Controller _controller;
         private readonly Models.Environment _environment;
         private readonly WireSelector _wireSelector = new WireSelector();
 
@@ -553,6 +553,30 @@ namespace EBike_Simulator.Core.Simulation
             }
 
             return test;
+        }
+
+        /// <summary>
+        /// Заменяет текущий мотор в системе на выбранный пользователем    
+        /// </summary>     
+        public void SetSelectedMotor(Motor selectedMotor)
+        { 
+            _motor = selectedMotor;
+        }
+
+        /// <summary>
+        /// Заменяет текущий контроллер в системе на выбранный пользователем    
+        /// </summary>     
+        public void SetSelectedController(Controller selectedController)
+        {
+            _controller = selectedController;
+        }
+
+        /// <summary>
+        /// Заменяет текущий аккумулятор в системе на выбранный пользователем    
+        /// </summary>     
+        public void SetSelectedBattery(Battery selectedBattery)
+        {
+            _battery = selectedBattery;     
         }
 
         #endregion
