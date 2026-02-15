@@ -5,6 +5,9 @@ using EBike_Simulator.Core.Models.Simulation;
 using EBike_Simulator.Core.Services;
 using EBike_Simulator.Core.Services.WireService;
 using EBike_Simulator.Core.Simulation;
+using EBike_Simulator.Data;
+using EBike_Simulator.Data.Models;
+using System.Runtime.InteropServices;
 using Environment = EBike_Simulator.Core.Models.Environment;
 
 namespace ElectricBikeSimulation.ConsoleTest
@@ -32,8 +35,17 @@ namespace ElectricBikeSimulation.ConsoleTest
 
         #region Main Entry Point
 
-        static void Main(string[] args)
+        static  void Main(string[] args)
         {
+            
+            //data test
+            var dataInit = new DataInitializer();
+            dataInit.StartAsync();
+            var translaterService = new TranslaterService(dataInit.TranslationRepos);
+            var str =  translaterService.Translate("welcome_message", Language.Ru);
+            Console.WriteLine(str.Result); 
+
+
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.WriteLine("╔══════════════════════════════════════════════════════════╗");
             Console.WriteLine("║         СИМУЛЯТОР ЭЛЕКТРОВЕЛОСИПЕДА v2.0                 ║");
