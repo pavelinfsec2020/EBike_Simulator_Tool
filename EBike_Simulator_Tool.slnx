@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="EBike_Simulator.Console/EBike_Simulator.ConsoleTest.csproj" />
   <Project Path="EBike_Simulator.Core/EBike_Simulator.Core.csproj" />
+  <Project Path="EBike_Simulator.Data/EBike_Simulator.Data.csproj" Id="e721e351-548b-4289-b8dc-d0c70ac34bce" />
+  <Project Path="EBike_Simulator.MainWebApp/EBike_Simulator.MainWebApp.csproj" Id="624a638f-aa8b-4646-989a-97f2a2702f9d" />
 </Solution>
