@@ -14,9 +14,10 @@ namespace EBike_Simulator.Data.Data
             
             var translations = new[]
             {
-            new Translation { Key = "welcome_message", RuString = "Добро пожаловать в симулятор!", EnString = "Welcome to the simulator!" },
-            new Translation { Key = "start_button", RuString = "Старт", EnString = "Start" },
-            new Translation { Key = "stop_button", RuString = "Стоп", EnString = "Stop" }
+            new Translation { Key = "criticalOverheating", RuString = "Критический перегрев", EnString = "Critical overheating" },
+            new Translation { Key = "overheating", RuString = "Перегрев", EnString = "Overheating" },
+            new Translation { Key = "warm", RuString = "Тепло", EnString = "Warm" },
+            new Translation { Key = "standard", RuString = "Норма", EnString = "Standard" },
             };
 
             await context.Translations.AddRangeAsync(translations);

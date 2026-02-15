@@ -317,19 +317,6 @@
         }
 
         /// <summary>
-        /// Получить текстовый статус температуры
-        /// </summary>
-        public string GetTemperatureStatus()
-        {
-            if (_temperature < -10) return "Критически холодно";
-            else if (_temperature < 0) return "Очень холодно";
-            else if (_temperature < 10) return "Холодно";
-            else if (_temperature > 45) return "Критически жарко";
-            else if (_temperature > 35) return "Жарко";
-            else return "Оптимально";
-        }
-
-        /// <summary>
         /// Рассчитать оставшееся время работы
         /// </summary>
         public double CalculateRemainingTime(double current)
