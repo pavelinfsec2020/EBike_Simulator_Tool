@@ -145,12 +145,15 @@
         /// <summary>
         /// Получить текстовый статус температуры
         /// </summary>
-        public string GetTemperatureStatus()
+        public string GetTemperatureStatus(Initializer init)
         {
-            if (_temperature > 100) return "Критический перегрев";
-            else if (_temperature > 80) return "Перегрев";
-            else if (_temperature > 60) return "Тепло";
-            else return "Норма";
+            var key = "standard";
+
+            if (_temperature > 80) key = "criticalOverheating";
+            else if (_temperature > 70) key = "overheating";
+            else if (_temperature > 60) key = "warm";
+
+            return init.Translater.Translate(key, init.Language).Result;
         }
 
         /// <summary>
