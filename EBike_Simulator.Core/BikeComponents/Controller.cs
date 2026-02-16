@@ -1,4 +1,5 @@
 ﻿using EBike_Simulator.Core.Enums;
+using EBike_Simulator.Core.Helpers;
 using EBike_Simulator.Core.Services;
 
 namespace EBike_Simulator.Core.BikeComponents
@@ -111,7 +112,7 @@ namespace EBike_Simulator.Core.BikeComponents
         /// <summary>
         /// Получить текстовый статус температуры
         /// </summary>
-        public string GetTemperatureStatus(Initializer init)
+        public string GetTemperatureStatus()
         {
             var key = "standard";
 
@@ -119,7 +120,7 @@ namespace EBike_Simulator.Core.BikeComponents
             else if (_temperature > 70) key = "overheating";
             else if (_temperature > 60) key =  "warm";
 
-           return init.Translater.Translate(key, init.Language).Result;
+           return Translater.TranslateByKey(key);
         }
 
         /// <summary>

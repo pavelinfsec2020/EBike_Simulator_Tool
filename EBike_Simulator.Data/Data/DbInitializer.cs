@@ -18,6 +18,10 @@ namespace EBike_Simulator.Data.Data
             new Translation { Key = "overheating", RuString = "Перегрев", EnString = "Overheating" },
             new Translation { Key = "warm", RuString = "Тепло", EnString = "Warm" },
             new Translation { Key = "standard", RuString = "Норма", EnString = "Standard" },
+            new Translation { Key = "wireDescrWarning", RuString = "ПРЕДУПРЕЖДЕНИЕ: Близко к пределу", EnString = "WARNING: Close to the limit" },
+            new Translation { Key = "wireDescrDanger", RuString = "ОПАСНО: Ток превышает максимальный!", EnString = "DANGER: The current exceeds the maximum value!" },
+            new Translation { Key = "wireDescrSafely", RuString = "Безопасно", EnString = "Safely" },
+
             };
 
             await context.Translations.AddRangeAsync(translations);

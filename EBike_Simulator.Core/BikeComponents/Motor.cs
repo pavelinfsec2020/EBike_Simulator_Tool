@@ -1,4 +1,6 @@
-﻿namespace EBike_Simulator.Core.BikeComponents
+﻿using EBike_Simulator.Core.Helpers;
+
+namespace EBike_Simulator.Core.BikeComponents
 {
     /// <summary>
     /// Модель электромотора для велосипеда с учетом тепловых характеристик
@@ -145,7 +147,7 @@
         /// <summary>
         /// Получить текстовый статус температуры
         /// </summary>
-        public string GetTemperatureStatus(Initializer init)
+        public string GetTemperatureStatus()
         {
             var key = "standard";
 
@@ -153,7 +155,7 @@
             else if (_temperature > 70) key = "overheating";
             else if (_temperature > 60) key = "warm";
 
-            return init.Translater.Translate(key, init.Language).Result;
+            return Translater.TranslateByKey(key);
         }
 
         /// <summary>

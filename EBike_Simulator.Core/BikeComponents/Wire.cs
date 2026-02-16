@@ -1,4 +1,6 @@
-﻿namespace EBike_Simulator.Core.BikeComponents
+﻿using EBike_Simulator.Core.Helpers;
+
+namespace EBike_Simulator.Core.BikeComponents
 {
     /// <summary>
     /// Модель электрического провода с характеристиками AWG
@@ -89,12 +91,16 @@
         /// <returns>Текстовое описание уровня безопасности</returns>
         public string GetSafetyStatus(double current)
         {
+            var statusKey = String.Empty;
+
             if (current > MaxCurrentAmp)
-                return "ОПАСНО: Ток превышает максимальный!";
+                statusKey = "wireDescrDanger";
             else if (current > MaxCurrentAmp * 0.8)
-                return "ПРЕДУПРЕЖДЕНИЕ: Близко к пределу";
+                statusKey = "wireDescrWarning";
             else
-                return "Безопасно";
+                return statusKey = "wireDescrSafely";
+
+            return Translater.TranslateByKey(statusKey);
         }
 
         /// <summary>

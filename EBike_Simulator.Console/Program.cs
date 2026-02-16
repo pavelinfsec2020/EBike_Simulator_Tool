@@ -1,6 +1,7 @@
 ﻿using EBike_Simulator.Core;
 using EBike_Simulator.Core.BikeComponents;
 using EBike_Simulator.Core.Enums;
+using EBike_Simulator.Core.Helpers;
 using EBike_Simulator.Core.Models;
 using EBike_Simulator.Core.Models.Simulation;
 using EBike_Simulator.Core.Services;
@@ -43,10 +44,10 @@ namespace ElectricBikeSimulation.ConsoleTest
             var dataInit = new DataInitializer();
             dataInit.StartAsync();
             var init = new Initializer(dataInit.TranslationRepos);
-            init.Language = Language.En;
-            Console.WriteLine(init.Translater.Translate("warm", init.Language).Result);
-            init.Language = Language.Ru;
-            Console.WriteLine(init.Translater.Translate("warm", init.Language).Result);
+
+            Console.WriteLine(Translater.TranslateByKey("wireDescrWarning"));
+            Translater.Language = Language.En;
+            Console.WriteLine(Translater.TranslateByKey("wireDescrWarning"));
 
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.WriteLine("╔══════════════════════════════════════════════════════════╗");
